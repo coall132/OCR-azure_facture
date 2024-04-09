@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ajouter une facture</title>
+    <link rel="stylesheet" href="{{ url_for('static', path='styles.css') }}">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+</head>
+<body>
+    <div class="container">
+        <div class="row mt-5">
+            <div class="col-md-6 offset-md-3">
+                <div class="title-container">
+                    <h1 class="title">Ajouter une facture et voir les donnée des factures ou des stat</h1>
+                </div>
+                <form action="/add_facture/" method="post">
+                    <div class="button-container">
+                        <button type="submit" id="demande" name="demande" value="True" class="btn btn-primary">Facture</button>
+                    </div>
+                </form>
+                <form action="/get_stat/" method="get"></form>
+                <div class="button-container">
+                    <a href="/path_stat" class="btn btn-primary">Donnée</a>
+                </div>
+                </form>
+                <form action="/get_graph/" method="get"></form>
+                <div class="button-container">
+                    <a href="/path_graph" class="btn btn-primary">graph/stat</a>
+                </div>
+                </form>
+                <form action="/path_monit/" method="get"></form>
+                <div class="button-container">
+                    <a href="/path_monit/" class="btn btn-primary">monitoring</a>
+                </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

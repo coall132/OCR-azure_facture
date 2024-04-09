@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Page Path Stat</title>
+    <script>
+        var currentPageIndices = {}; // Un objet pour stocker l'indice actuel de chaque table
+        var pageSize = 10; // Nombre de lignes par page
+
+        function toggleVisibility(tableId, ...searchIds) {
+            var tableElement = document.getElementById(tableId);
+
+            if (!tableElement) {
+                console.error("L'élément avec l'ID " + tableId + " n'existe pas.");
+                return;
+            }
+
+            tableElement.style.display = (tableElement.style.display === "none") ? "block" : "none";
+
+            searchIds.forEach(searchId => {
+                if (searchId) {
+                    var searchElement = document.getElementById(searchId);
+                    if (searchElement) {
+                        searchElement.style.display = (searchElement.style.display === "none") ? "block" : "none";
+                    } else {
+                        console.error("L'élément de recherche avec l'ID " + searchId + " n'existe pas.");
+                    }
+                }
+            });
+
+            currentPageIndices[tableId] = (tableElement.style.display === "none") ? 0 : 0;
+            showCurrentPage(tableId);
+        }
+
+
+
+        function showCustomerDetails(custValue, test) {
+            var customerTableDiv = document.getElementById("customer");
+            customerTableDiv.style.display = "block";
+
+            if (test === 0) {
+                currentPageIndices['customer'] = 0;
+            }
+
+            // Trouver et mettre en surbrillance la ligne correspondante dans la table customer
+            var customerTable = document.getElementById("customer-table");
+            var rows = customerTable.getElementsByTagName("tr");
+
+            // Réinitialiser la mise en surbrillance des lignes
+            for (var j = 0; j < rows.length; j++) {
+                rows[j].style.backgroundColor = "";
+            }
+
+            // Chercher la ligne correspondante
+            var found = false;
+            for (var i = 0; i < rows.length; i++) {
+                var cells = rows[i].getElementsByTagName("td");
+                if (cells.length > 1 && (cells[0].innerText === custValue || cells[1].innerText === custValue || cells[2].innerText === custValue)) {
+                    // Trouvé la ligne correspondante
+                    found = true;
+                    var pageIndex = Math.floor(i / pageSize);
+                    if (i % pageSize === 0) {
+                        pageIndex = pageIndex - 1; // Soustraire 1 de l'indice de page
+                    }
+                    currentPageIndices['customer'] = pageIndex; // Mettre à jour l'indice de page
+                    showCurrentPage('customer');
+                    rows[i].style.backgroundColor = "yellow"; // Mettre en surbrillance la ligne
+                    window.location.href = "#CUST-" + custValue;
+                    break;
+                }
+            }
+
+            // Si la valeur n'est pas trouvée sur la page actuelle et n'est pas le dernier élément de la page, passer automatiquement à la page suivante
+            if (!found && currentPageIndices['customer'] < Math.ceil(rows.length / pageSize) - 1) {
+                nextPage('customer');
+                setTimeout(() => showCustomerDetails(custValue, test = 1), 100); // Réessayer après un court délai
+            }
+        }
+
+
+
+        function showProdDetails(prodValue,test) {
+            var prodTableDiv = document.getElementById("produit");
+            prodTableDiv.style.display = "block";
+
+            if (test === 0) {
+                currentPageIndices['produit'] = 0;
+            }
+            var prodTable = document.getElementById("produit-table");
+            var rows = prodTable.getElementsByTagName("tr");
+
+            for (var j = 0; j < rows.length; j++) {
+                rows[j].style.backgroundColor = "";
+            }
+            var found = false;
+            for (var i = 0; i < rows.length; i++) {
+                var cells = rows[i].getElementsByTagName("td");
+                if (cells.length > 0 && cells[0].innerText === prodValue) {
+                    found = true;
+                    var pageIndex = Math.floor(i / pageSize);
+                    if (i % pageSize === 0) {
+                        pageIndex = pageIndex - 1; // Soustraire 1 de l'indice de page
+                    }
+                    currentPageIndices['produit'] = pageIndex; // Mettre à jour l'indice de page
+                    showCurrentPage('produit');
+                    rows[i].style.backgroundColor = "yellow"; // Mettre en surbrillance la ligne
+                    window.location.href = "#produit-" + prodValue;
+                    break;
+                }
+            }
+            if (!found) {
+                nextPage('produit');
+                setTimeout(() => showProdDetails(prodValue,test=1), 100); // Réessayer après un court délai
+            }
+        }
+
+        function nextPage(tableId) {
+            if (!currentPageIndices[tableId]) {
+                currentPageIndices[tableId] = 0;
+            }
+            currentPageIndices[tableId]++;
+            showCurrentPage(tableId);
+        }
+
+        function previousPage(tableId) {
+            if (!currentPageIndices[tableId]) {
+                currentPageIndices[tableId] = 0;
+            }
+            if (currentPageIndices[tableId] > 0) {
+                currentPageIndices[tableId]--;
+                showCurrentPage(tableId);
+            }
+        }
+
+        function showCurrentPage(tableId) {
+            var start = currentPageIndices[tableId] * pageSize;
+            var end = start + pageSize;
+
+            // Afficher uniquement les lignes de la page actuelle pour la table spécifiée
+            var rows = document.querySelectorAll("#" + tableId + " table tbody tr");
+            for (var i = 0; i < rows.length; i++) {
+                if (i >= start && i < end) {
+                    rows[i].style.display = "table-row";
+                } else {
+                    rows[i].style.display = "none";
+                }
+            }
+        }
+        
+        function searchCustomer(searchCustId,test,test2) {
+            var searchCustInput = document.getElementById(searchCustId);
+            var searchValue = searchCustInput.value.trim();
+
+            if (!searchValue) {
+                return; 
+            }
+            if (test === 0) {
+                currentPageIndices['customer'] = 0;
+            }
+            var customerTable = document.getElementById("customer-table");
+            var rows = customerTable.getElementsByTagName("tr");
+
+        
+            for (var j = 0; j < rows.length; j++) {
+                rows[j].style.backgroundColor = "";
+            }
+
+            var found = false;
+            for (var i = 0; i < rows.length; i++) {
+                var cells = rows[i].getElementsByTagName("td");
+                if (cells.length > 1 && (cells[0].innerText === searchValue || cells[1].innerText === searchValue || cells[2].innerText === searchValue)) {
+                    
+                    found = true;
+                    var pageIndex = Math.floor(i / pageSize);
+                    if (i % pageSize === 0) {
+                        pageIndex = pageIndex - 1;
+                    }
+                    currentPageIndices['customer'] = pageIndex;
+                    showCurrentPage('customer');
+                    rows[i].style.backgroundColor = "yellow";
+                    if (test2==='CUST') {
+                        window.location.href = "#CUST-" + searchValue;
+                    }
+                    if (test2==='nom') {
+                        window.location.href = "#nom-" + searchValue;
+                    }
+                    break;
+                }
+            }
+
+            if (!found && currentPageIndices['customer'] < Math.ceil(rows.length / pageSize) - 1) {
+                nextPage('customer');
+                setTimeout(() => searchCustomer(searchCustId,test=1,test2), 100); 
+            }
+        }
+        function resetTableOrder() {
+            var table, rows, i;
+            table = document.getElementById("customer-table");
+            rows = table.rows;
+            for (i = 1; i < rows.length; i++) {
+                table.appendChild(rows[i]);
+            }
+        }
+
+
+        function sortTableAsc(columnName) {
+            var columnIndex = findColumnIndex(columnName);
+            if (columnIndex === -1) {
+                console.error("La colonne spécifiée n'existe pas.");
+                return;
+            }
+            var table, rows, i, x, y, shouldSwitch;
+            table = document.getElementById("customer-table");
+            rows = table.rows;
+            var shouldSort = true;
+            while (shouldSort) {
+                shouldSort = false;
+                for (i = 1; i < (rows.length - 1); i++) {
+                    shouldSwitch = false;
+                    x = parseFloat(rows[i].getElementsByTagName("td")[columnIndex].innerText);
+                    y = parseFloat(rows[i + 1].getElementsByTagName("td")[columnIndex].innerText);
+                    if (x > y) {
+                        shouldSwitch = true;
+                        break;
+                    }
+                }
+                if (shouldSwitch) {
+                    rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
+                    shouldSort = true;
+                }
+            }
+            showCurrentPage('customer');
+        }
+
+        function sortTableDesc(columnName) {
+            var columnIndex = findColumnIndex(columnName);
+            if (columnIndex === -1) {
+                console.error("La colonne spécifiée n'existe pas.");
+                return;
+            }
+            var table, rows, i, x, y, shouldSwitch;
+            table = document.getElementById("customer-table");
+            rows = table.rows;
+            var shouldSort = true;
+            while (shouldSort) {
+                shouldSort = false;
+                for (i = 1; i < (rows.length - 1); i++) {
+                    shouldSwitch = false;
+                    x = parseFloat(rows[i].getElementsByTagName("td")[columnIndex].innerText);
+                    y = parseFloat(rows[i + 1].getElementsByTagName("td")[columnIndex].innerText);
+                    if (x < y) {
+                        shouldSwitch = true;
+                        break;
+                    }
+                }
+                if (shouldSwitch) {
+                    rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
+                    shouldSort = true;
+                }
+            }
+            showCurrentPage('customer');
+        }
+
+        function applyPagination(tableId) {
+            showCurrentPage(tableId);
+        }
+        
+        function redirectToForm(CUST) {
+            window.location.href = 'stat_cust.html?CUST=' + CUST;
+        }
+
+        function addClickEventToCUSTCells() {
+            var cells = document.querySelectorAll('#customer-table tbody tr td:nth-child(1)');
+            cells.forEach(function(cell) {
+                cell.addEventListener('click', function() {
+                    var CUST = this.textContent.trim(); 
+                    redirectToForm(CUST); 
+                });
+            });
+        }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        addClickEventToCUSTCells(); 
+    });
+    </script>
+    <style>
+        table {
+            border-collapse: collapse;
+            width: 100%;
+        }
+        th, td {
+            border: 1px solid #dddddd;
+            text-align: left;
+            padding: 8px;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+    </style>
+</head>
+<body>
+    <div>
+        <form action="/path_stat2" method="post">
+            <label for="date_debut">Date de début( format : XXXX-XX-XX ):</label>
+            <input type="text" id="date_debut" name="date_debut">
+    
+            <label for="date_fin">Date de fin( format : XXXX-XX-XX ) :</label>
+            <input type="text" id="date_fin" name="date_fin">
+    
+            <button type="submit">Valider</button>
+        </form>
+    </div>
+    <div>
+        <button onclick="toggleVisibility('facture')">Afficher DataFrame facture</button>
+        <div id="facture" style="display: none;">
+            <h1>DataFrame facture</h1>
+            <table>
+                <thead>
+                    <tr>
+                        {% for key in facture[0].keys() %}
+                        <th>{{ key }}</th>
+                        {% endfor %}
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in facture %}
+                    <tr>
+                        {% for key, value in row.items() %}
+                        {% if key == 'CUST' %}
+                        <td onclick="showCustomerDetails('{{ value }}',0)" style="cursor: pointer;">{{ value }}</td>
+                        {% else %}
+                        <td>{{ value }}</td>
+                        {% endif %}
+                        {% endfor %}
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            <button onclick="previousPage('facture')">Page précédente</button>
+            <button onclick="nextPage('facture')">Page suivante</button>
+            <script>
+                applyPagination('facture'); 
+            </script>
+        </div>
+    </div>
+    <div>
+        <button onclick="toggleVisibility('detail_fact')">Afficher DataFrame detail_facture</button>
+        <div id="detail_fact" style="display: none;">
+            <h1>DataFrame detail_facture</h1>
+            <table>
+                <thead>
+                    <tr>
+                        {% for key in detail_fact[0].keys() %}
+                        <th>{{ key }}</th>
+                        {% endfor %}
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in detail_fact %}
+                    <tr>
+                        {% for key, value in row.items() %}
+                        {% if key == 'produit' %}
+                        <td onclick="showProdDetails('{{ value }}',0)" style="cursor: pointer;">{{ value }}</td>
+                        {% else %}
+                        <td>{{ value }}</td>
+                        {% endif %}
+                        {% endfor %}
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            <button onclick="previousPage('detail_fact')">Page précédente</button>
+            <button onclick="nextPage('detail_fact')">Page suivante</button>
+            <script>
+                applyPagination('detail_fact'); 
+            </script>
+        </div>
+    </div>
+    <div>
+        <button onclick="toggleVisibility('customer', 'search_customer','search_CUST','bouton_trie_cust','bouton_trie_cust2')">Afficher DataFrame customer</button>
+        <div id="bouton_trie_cust" style="display: none;">
+            <button onclick="sortTableAsc('nb de facture')">Trier par nb de facture (ascendant)</button>
+            <button onclick="sortTableDesc('nb de facture')">Trier par nb de facture(descendant)</button>
+            <button onclick="sortTableAsc('CUST')">Réinitialiser l'ordre</button>
+        </div>
+        <div id="bouton_trie_cust2" style="display: none;">
+            <button onclick="sortTableAsc('total depense')">Trier par depense total (ascendant)</button>
+            <button onclick="sortTableDesc('total depense')">Trier par depense total (descendant)</button>
+            <button onclick="sortTableAsc('CUST')">Réinitialiser l'ordre</button>
+        </div>
+        <div id="search_CUST" style="display: none;">
+            <input type="text" id="search_cust" placeholder="Entrez le CUST">
+            <button onclick="searchCustomer('search_cust',0,'CUST')">Rechercher</button>
+        </div>
+        <div id="search_customer" style="display: none;">
+            <input type="text" id="search_nom" placeholder="Entrez le nom">
+            <button onclick="searchCustomer('search_nom',0,'nom')">Rechercher</button>
+        </div>
+        <div id="customer" style="display: none;">
+            <h1>DataFrame customer</h1>
+            <table id="customer-table">
+                <thead>
+                    <tr>
+                        {% for key in customer[0].keys() %}
+                        <th>{{ key }}</th>
+                        {% endfor %}
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in customer %}
+                    <tr>
+                        {% for key, value in row.items() %}
+                        {% if key == 'CUST'%}
+                        <td id="{{ key }}-{{ value }}"><a href="/path_stat/CUST?CUST={{ value }}">{{ value }}</a></td>
+                        {% elif key == 'nom' %}
+                        <td id="{{ key }}-{{ value }}">{{ value }}</td>
+                        {% else %}
+                        <td>{{ value }}</td>
+                        {% endif %}
+                        {% endfor %}
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            <button onclick="previousPage('customer')">Page précédente</button>
+            <button onclick="nextPage('customer')">Page suivante</button>
+            <script>
+                applyPagination('customer'); 
+            </script>
+        </div>
+    </div>
+    
+    <div>
+        <button onclick="toggleVisibility('produit')">Afficher DataFrame produit</button>
+        <div id="produit" style="display: none;">
+            <h1>DataFrame produit</h1>
+            <table id="produit-table">
+                <thead>
+                    <tr>
+                        {% for key in produit[0].keys() %}
+                        <th>{{ key }}</th>
+                        {% endfor %}
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in produit %}
+                    <tr>
+                        {% for key, value in row.items() %}
+                        {% if key == 'produit' %}
+                        <td id="{{ key }}-{{ value }}">{{ value }}</td>
+                        {% else %}
+                        <td>{{ value }}</td>
+                        {% endif %}
+                        {% endfor %}
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            <button onclick="previousPage('produit')">Page précédente</button>
+            <button onclick="nextPage('produit')">Page suivante</button>
+            <script>
+                applyPagination('produit'); 
+            </script>
+        </div>
+    </div>
+</body>
+</html>

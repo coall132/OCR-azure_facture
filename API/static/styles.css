@@ -1,0 +1,22 @@
+/* styles.css */
+.title-container {
+    text-align: center;
+}
+
+.title {
+    font-size: 36px;
+    font-weight: bold;
+    color: #333;
+    margin-bottom: 20px;
+}
+
+.subtitle {
+    font-size: 18px;
+    color: #666;
+    margin-bottom: 30px;
+}
+
+.button-container {
+    text-align: center;
+    margin-top: 20px;
+}

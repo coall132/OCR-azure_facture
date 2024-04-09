@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bonjour</title>
+    <script>
+        var currentPageIndices = {}; // Un objet pour stocker l'indice actuel de chaque table
+        var pageSize = 10; // Nombre de lignes par page
+
+        function toggleVisibility(id) {
+            var element = document.getElementById(id);
+            if (element.style.display === "none") {
+                element.style.display = "block";
+                // Lorsque vous affichez la table, commencez par la première page
+                currentPageIndices[id] = 0;
+                showCurrentPage(id);
+            } else {
+                element.style.display = "none";
+            }
+        }
+        function nextPage(tableId) {
+            if (!currentPageIndices[tableId]) {
+                currentPageIndices[tableId] = 0;
+            }
+            currentPageIndices[tableId]++;
+            showCurrentPage(tableId);
+        }
+
+        function previousPage(tableId) {
+            if (!currentPageIndices[tableId]) {
+                currentPageIndices[tableId] = 0;
+            }
+            if (currentPageIndices[tableId] > 0) {
+                currentPageIndices[tableId]--;
+                showCurrentPage(tableId);
+            }
+        }
+
+        function showCurrentPage(tableId) {
+            var start = currentPageIndices[tableId] * pageSize;
+            var end = start + pageSize;
+
+            // Afficher uniquement les lignes de la page actuelle pour la table spécifiée
+            var rows = document.querySelectorAll("#" + tableId + " table tbody tr");
+            for (var i = 0; i < rows.length; i++) {
+                if (i >= start && i < end) {
+                    rows[i].style.display = "table-row";
+                } else {
+                    rows[i].style.display = "none";
+                }
+            }
+        }
+
+        // Fonction pour appeler showCurrentPage après la génération des éléments de table
+        function applyPagination(tableId) {
+            showCurrentPage(tableId);
+        }
+    </script>
+    <style>
+        table {
+            border-collapse: collapse;
+            width: 100%;
+        }
+        th, td {
+            border: 1px solid #dddddd;
+            text-align: left;
+            padding: 8px;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+    </style>
+</head>
+<body>
+    <div>
+        <form action="/path_graph4" method="post">
+            <label for="date"> Intervalle (jour/semaine/mois/année):</label>
+            <input type="text" id="date" name="date">
+            <button type="submit">Valider</button>
+        </form>
+    </div>
+    <div>
+        <form action="/path_graph3" method="post">
+            <label for="CUST">Numeros de CUST</label>
+            <input type="text" id="CUST" name="CUST">
+            {% if date %}
+            <input type="hidden" name="date" value="{{ date }}">
+            {% endif %}
+            <button type="submit">Valider</button>
+        </form>
+    </div>
+    <div>
+        <form action="/path_graph2" method="post">
+            <label for="produit">Produit</label>
+            <input type="text" id="produit" name="produit">
+            {% if date %}
+            <input type="hidden" name="date" value="{{ date }}">
+            {% endif %}
+            <button type="submit">Valider</button>
+        </form>
+    </div>
+    <div>
+        {{ graph_image|safe }}
+    </div>
+    <div>
+        {{ graph_image2|safe }}
+    </div>
+    {% if graph_prod %}
+    <div>
+        {{ graph_prod|safe }}
+    </div>
+    {% endif %}
+    {% if graph_cust %}
+    <div>
+        {{ graph_cust|safe }}
+    </div>
+    {% endif %}
+</body>
+</html>

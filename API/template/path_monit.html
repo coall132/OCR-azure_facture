@@ -1,0 +1,593 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Page Path Stat</title>
+    <script>
+        var currentPageIndices = {}; // Un objet pour stocker l'indice actuel de chaque table
+        var pageSize = 10; // Nombre de lignes par page
+
+        function toggleVisibility(tableId, ...searchIds) {
+            var tableElement = document.getElementById(tableId);
+
+            if (!tableElement) {
+                console.error("L'élément avec l'ID " + tableId + " n'existe pas.");
+                return;
+            }
+
+            tableElement.style.display = (tableElement.style.display === "none") ? "block" : "none";
+
+            searchIds.forEach(searchId => {
+                if (searchId) {
+                    var searchElement = document.getElementById(searchId);
+                    if (searchElement) {
+                        searchElement.style.display = (searchElement.style.display === "none") ? "block" : "none";
+                    } else {
+                        console.error("L'élément de recherche avec l'ID " + searchId + " n'existe pas.");
+                    }
+                }
+            });
+
+            currentPageIndices[tableId] = (tableElement.style.display === "none") ? 0 : 0;
+            showCurrentPage(tableId);
+        }
+
+
+
+        function showCustomerDetails(custValue, test) {
+            var customerTableDiv = document.getElementById("customer");
+            customerTableDiv.style.display = "block";
+
+            if (test === 0) {
+                currentPageIndices['customer'] = 0;
+            }
+
+            // Trouver et mettre en surbrillance la ligne correspondante dans la table customer
+            var customerTable = document.getElementById("customer-table");
+            var rows = customerTable.getElementsByTagName("tr");
+
+            // Réinitialiser la mise en surbrillance des lignes
+            for (var j = 0; j < rows.length; j++) {
+                rows[j].style.backgroundColor = "";
+            }
+
+            // Chercher la ligne correspondante
+            var found = false;
+            for (var i = 0; i < rows.length; i++) {
+                var cells = rows[i].getElementsByTagName("td");
+                if (cells.length > 1 && (cells[0].innerText === custValue || cells[1].innerText === custValue || cells[2].innerText === custValue)) {
+                    // Trouvé la ligne correspondante
+                    found = true;
+                    var pageIndex = Math.floor(i / pageSize);
+                    if (i % pageSize === 0) {
+                        pageIndex = pageIndex - 1; // Soustraire 1 de l'indice de page
+                    }
+                    currentPageIndices['customer'] = pageIndex; // Mettre à jour l'indice de page
+                    showCurrentPage('customer');
+                    rows[i].style.backgroundColor = "yellow"; // Mettre en surbrillance la ligne
+                    window.location.href = "#CUST-" + custValue;
+                    break;
+                }
+            }
+
+            // Si la valeur n'est pas trouvée sur la page actuelle et n'est pas le dernier élément de la page, passer automatiquement à la page suivante
+            if (!found && currentPageIndices['customer'] < Math.ceil(rows.length / pageSize) - 1) {
+                nextPage('customer');
+                setTimeout(() => showCustomerDetails(custValue, test = 1), 100); // Réessayer après un court délai
+            }
+        }
+
+
+
+        function showProdDetails(prodValue,test) {
+            var prodTableDiv = document.getElementById("produit");
+            prodTableDiv.style.display = "block";
+
+            if (test === 0) {
+                currentPageIndices['produit'] = 0;
+            }
+            var prodTable = document.getElementById("produit-table");
+            var rows = prodTable.getElementsByTagName("tr");
+
+            for (var j = 0; j < rows.length; j++) {
+                rows[j].style.backgroundColor = "";
+            }
+            var found = false;
+            for (var i = 0; i < rows.length; i++) {
+                var cells = rows[i].getElementsByTagName("td");
+                if (cells.length > 0 && cells[0].innerText === prodValue) {
+                    found = true;
+                    var pageIndex = Math.floor(i / pageSize);
+                    if (i % pageSize === 0) {
+                        pageIndex = pageIndex - 1; // Soustraire 1 de l'indice de page
+                    }
+                    currentPageIndices['produit'] = pageIndex; // Mettre à jour l'indice de page
+                    showCurrentPage('produit');
+                    rows[i].style.backgroundColor = "yellow"; // Mettre en surbrillance la ligne
+                    window.location.href = "#produit-" + prodValue;
+                    break;
+                }
+            }
+            if (!found) {
+                nextPage('produit');
+                setTimeout(() => showProdDetails(prodValue,test=1), 100); // Réessayer après un court délai
+            }
+        }
+
+        function nextPage(tableId) {
+            if (!currentPageIndices[tableId]) {
+                currentPageIndices[tableId] = 0;
+            }
+            currentPageIndices[tableId]++;
+            showCurrentPage(tableId);
+        }
+
+        function previousPage(tableId) {
+            if (!currentPageIndices[tableId]) {
+                currentPageIndices[tableId] = 0;
+            }
+            if (currentPageIndices[tableId] > 0) {
+                currentPageIndices[tableId]--;
+                showCurrentPage(tableId);
+            }
+        }
+
+        function showCurrentPage(tableId) {
+            var start = currentPageIndices[tableId] * pageSize;
+            var end = start + pageSize;
+
+            // Afficher uniquement les lignes de la page actuelle pour la table spécifiée
+            var rows = document.querySelectorAll("#" + tableId + " table tbody tr");
+            for (var i = 0; i < rows.length; i++) {
+                if (i >= start && i < end) {
+                    rows[i].style.display = "table-row";
+                } else {
+                    rows[i].style.display = "none";
+                }
+            }
+        }
+        
+        function searchCustomer(searchCustId,test,test2) {
+            var searchCustInput = document.getElementById(searchCustId);
+            var searchValue = searchCustInput.value.trim();
+
+            if (!searchValue) {
+                return; 
+            }
+            if (test === 0) {
+                currentPageIndices['customer'] = 0;
+            }
+            var customerTable = document.getElementById("customer-table");
+            var rows = customerTable.getElementsByTagName("tr");
+
+        
+            for (var j = 0; j < rows.length; j++) {
+                rows[j].style.backgroundColor = "";
+            }
+
+            var found = false;
+            for (var i = 0; i < rows.length; i++) {
+                var cells = rows[i].getElementsByTagName("td");
+                if (cells.length > 1 && (cells[0].innerText === searchValue || cells[1].innerText === searchValue || cells[2].innerText === searchValue)) {
+                    
+                    found = true;
+                    var pageIndex = Math.floor(i / pageSize);
+                    if (i % pageSize === 0) {
+                        pageIndex = pageIndex - 1;
+                    }
+                    currentPageIndices['customer'] = pageIndex;
+                    showCurrentPage('customer');
+                    rows[i].style.backgroundColor = "yellow";
+                    if (test2==='CUST') {
+                        window.location.href = "#CUST-" + searchValue;
+                    }
+                    if (test2==='nom') {
+                        window.location.href = "#nom-" + searchValue;
+                    }
+                    break;
+                }
+            }
+
+            if (!found && currentPageIndices['customer'] < Math.ceil(rows.length / pageSize) - 1) {
+                nextPage('customer');
+                setTimeout(() => searchCustomer(searchCustId,test=1,test2), 100); 
+            }
+        }
+        function resetTableOrder() {
+            var table, rows, i;
+            table = document.getElementById("customer-table");
+            rows = table.rows;
+            for (i = 1; i < rows.length; i++) {
+                table.appendChild(rows[i]);
+            }
+        }
+
+
+        function sortTableAsc(columnName) {
+            var columnIndex = findColumnIndex(columnName);
+            if (columnIndex === -1) {
+                console.error("La colonne spécifiée n'existe pas.");
+                return;
+            }
+            var table, rows, i, x, y, shouldSwitch;
+            table = document.getElementById("customer-table");
+            rows = table.rows;
+            var shouldSort = true;
+            while (shouldSort) {
+                shouldSort = false;
+                for (i = 1; i < (rows.length - 1); i++) {
+                    shouldSwitch = false;
+                    x = parseFloat(rows[i].getElementsByTagName("td")[columnIndex].innerText);
+                    y = parseFloat(rows[i + 1].getElementsByTagName("td")[columnIndex].innerText);
+                    if (x > y) {
+                        shouldSwitch = true;
+                        break;
+                    }
+                }
+                if (shouldSwitch) {
+                    rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
+                    shouldSort = true;
+                }
+            }
+            showCurrentPage('customer');
+        }
+
+        function sortTableDesc(columnName) {
+            var columnIndex = findColumnIndex(columnName);
+            if (columnIndex === -1) {
+                console.error("La colonne spécifiée n'existe pas.");
+                return;
+            }
+            var table, rows, i, x, y, shouldSwitch;
+            table = document.getElementById("customer-table");
+            rows = table.rows;
+            var shouldSort = true;
+            while (shouldSort) {
+                shouldSort = false;
+                for (i = 1; i < (rows.length - 1); i++) {
+                    shouldSwitch = false;
+                    x = parseFloat(rows[i].getElementsByTagName("td")[columnIndex].innerText);
+                    y = parseFloat(rows[i + 1].getElementsByTagName("td")[columnIndex].innerText);
+                    if (x < y) {
+                        shouldSwitch = true;
+                        break;
+                    }
+                }
+                if (shouldSwitch) {
+                    rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
+                    shouldSort = true;
+                }
+            }
+            showCurrentPage('customer');
+        }
+
+        function applyPagination(tableId) {
+            showCurrentPage(tableId);
+        }
+        
+        function redirectToForm(CUST) {
+            window.location.href = 'stat_cust.html?CUST=' + CUST;
+        }
+
+        function addClickEventToCUSTCells() {
+            var cells = document.querySelectorAll('#customer-table tbody tr td:nth-child(1)');
+            cells.forEach(function(cell) {
+                cell.addEventListener('click', function() {
+                    var CUST = this.textContent.trim(); 
+                    redirectToForm(CUST); 
+                });
+            });
+        }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        addClickEventToCUSTCells(); 
+    });
+    </script>
+    <style>
+        table {
+            border-collapse: collapse;
+            width: 100%;
+        }
+        th, td {
+            border: 1px solid #dddddd;
+            text-align: left;
+            padding: 8px;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+    </style>
+</head>
+<body>
+    <div>
+        <form action="/path_monit2" method="post">
+            <label for="date_debut">Date de début( format : XXXX-XX-XX XX:XX:XX):</label>
+            <input type="text" id="date_debut" name="date_debut">
+    
+            <label for="date_fin">Date de fin( format : XXXX-XX-XX XX:XX:XX) :</label>
+            <input type="text" id="date_fin" name="date_fin">
+    
+            <button type="submit">Valider</button>
+        </form>
+    </div>
+        {% if monit %}
+        <div>
+            <button onclick="toggleVisibility('monit')">Afficher Monitoring global</button>
+            <div id="monit" style="display: none;">
+                <h1>Monitoring global</h1>
+                <table>
+                    <thead>
+                        <tr>
+                            {% for key in monit[0].keys() %}
+                            <th>{{ key }}</th>
+                            {% endfor %}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for row in monit %}
+                        <tr>
+                            {% for key, value in row.items() %}
+                            <td>{{ value }}</td>
+                            {% endfor %}
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                <button onclick="previousPage('monit')">Page précédente</button>
+                <button onclick="nextPage('monit')">Page suivante</button>
+                <script>
+                    applyPagination('monit'); 
+                </script>
+            </div>
+        </div>
+        {% endif %}
+        {% if monit_ocr %}
+        <div>
+            <button onclick="toggleVisibility('monit_ocr')">Afficher monit OCR</button>
+            <div id="monit_ocr" style="display: none;">
+                <h1>Monitoring OCR</h1>
+                <table>
+                    <thead>
+                        <tr>
+                            {% for key in monit_ocr[0].keys() %}
+                            <th>{{ key }}</th>
+                            {% endfor %}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for row in monit_ocr %}
+                        <tr>
+                            {% for key, value in row.items() %}
+                            <td>{{ value }}</td>
+                            {% endfor %}
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                <button onclick="previousPage('monit_ocr')">Page précédente</button>
+                <button onclick="nextPage('monit_ocr')">Page suivante</button>
+                <script>
+                    applyPagination('monit_ocr'); 
+                </script>
+            </div>
+        </div>
+        {% endif %}
+        {% if monit_trait %}
+        <div>
+            <button onclick="toggleVisibility('monit_trait')">Afficher monit traitement donnée</button>
+            <div id="monit_trait" style="display: none;">
+                <h1>Monitoring traitement des données</h1>
+                <table>
+                    <thead>
+                        <tr>
+                            {% for key in monit_trait[0].keys() %}
+                            <th>{{ key }}</th>
+                            {% endfor %}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for row in monit_trait %}
+                        <tr>
+                            {% for key, value in row.items() %}
+                            <td>{{ value }}</td>
+                            {% endfor %}
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                <button onclick="previousPage('monit_trait')">Page précédente</button>
+                <button onclick="nextPage('monit_trait')">Page suivante</button>
+                <script>
+                    applyPagination('monit_trait'); 
+                </script>
+            </div>
+        </div>
+        {% endif %}
+        {% if monit_crea_df1 %}
+        <div>
+            <button onclick="toggleVisibility('monit_crea_df1')">Afficher monit creation df facture</button>
+            <div id="monit_crea_df1" style="display: none;">
+                <h1>Monit creation df facture</h1>
+                <table>
+                    <thead>
+                        <tr>
+                            {% for key in monit_crea_df1[0].keys() %}
+                            <th>{{ key }}</th>
+                            {% endfor %}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for row in monit_crea_df1 %}
+                        <tr>
+                            {% for key, value in row.items() %}
+                            <td>{{ value }}</td>
+                            {% endfor %}
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                <button onclick="previousPage('monit_crea_df1')">Page précédente</button>
+                <button onclick="nextPage('monit_crea_df1')">Page suivante</button>
+                <script>
+                    applyPagination('monit_crea_df1'); 
+                </script>
+            </div>
+        </div>
+        {% endif %}
+        {% if monit_crea_df2 %}
+        <div>
+            <button onclick="toggleVisibility('monit_crea_df2')">Afficher Monit creation autre df</button>
+            <div id="monit_crea_df2" style="display: none;">
+                <h1>Monitoring creation autre df</h1>
+                <table>
+                    <thead>
+                        <tr>
+                            {% for key in monit_crea_df2[0].keys() %}
+                            <th>{{ key }}</th>
+                            {% endfor %}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for row in monit_crea_df2 %}
+                        <tr>
+                            {% for key, value in row.items() %}
+                            <td>{{ value }}</td>
+                            {% endfor %}
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                <button onclick="previousPage('monit_crea_df2')">Page précédente</button>
+                <button onclick="nextPage('monit_crea_df2')">Page suivante</button>
+                <script>
+                    applyPagination('monit_crea_df2'); 
+                </script>
+            </div>
+        </div>
+        {% endif %}
+        {% if monit_bdd_cust %}
+        <div>
+            <button onclick="toggleVisibility('monit_bdd_cust')">Monitoring bdd customer</button>
+            <div id="monit_bdd_cust" style="display: none;">
+                <h1>Monitoring bdd customer</h1>
+                <table>
+                    <thead>
+                        <tr>
+                            {% for key in monit_bdd_cust[0].keys() %}
+                            <th>{{ key }}</th>
+                            {% endfor %}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for row in monit_bdd_cust %}
+                        <tr>
+                            {% for key, value in row.items() %}
+                            <td>{{ value }}</td>
+                            {% endfor %}
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                <button onclick="previousPage('monit_bdd_cust')">Page précédente</button>
+                <button onclick="nextPage('monit_bdd_cust')">Page suivante</button>
+                <script>
+                    applyPagination('monit_bdd_cust'); 
+                </script>
+            </div>
+        </div>
+        {% endif %}
+        {% if monit_bdd_prod %}
+        <div>
+            <button onclick="toggleVisibility('monit_bdd_prod')">Afficher monit bdd prod</button>
+            <div id="monit_bdd_prod" style="display: none;">
+                <h1>Monit bdd prod</h1>
+                <table>
+                    <thead>
+                        <tr>
+                            {% for key in monit_bdd_prod[0].keys() %}
+                            <th>{{ key }}</th>
+                            {% endfor %}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for row in monit_bdd_prod %}
+                        <tr>
+                            {% for key, value in row.items() %}
+                            <td>{{ value }}</td>
+                            {% endfor %}
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                <button onclick="previousPage('monit_bdd_prod')">Page précédente</button>
+                <button onclick="nextPage('monit_bdd_prod')">Page suivante</button>
+                <script>
+                    applyPagination('monit_bdd_prod'); 
+                </script>
+            </div>
+        </div>
+        {% endif %}
+        {% if monit_bdd_fact %}
+        <div>
+            <button onclick="toggleVisibility('monit_bdd_fact')">Afficher monit bdd facture</button>
+            <div id="monit_bdd_fact" style="display: none;">
+                <h1>monit bdd facture</h1>
+                <table>
+                    <thead>
+                        <tr>
+                            {% for key in monit_bdd_fact[0].keys() %}
+                            <th>{{ key }}</th>
+                            {% endfor %}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for row in monit_bdd_fact %}
+                        <tr>
+                            {% for key, value in row.items() %}
+                            <td>{{ value }}</td>
+                            {% endfor %}
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                <button onclick="previousPage('monit_bdd_fact')">Page précédente</button>
+                <button onclick="nextPage('monit_bdd_fact')">Page suivante</button>
+                <script>
+                    applyPagination('monit_bdd_fact'); 
+                </script>
+            </div>
+        </div>
+        {% endif %}
+        {% if monit_bdd_detail_fact%}
+        <div>
+            <button onclick="toggleVisibility('monit_bdd_detail_fact')">Afficher monit bdd detail facture</button>
+            <div id="monit_bdd_detail_fact" style="display: none;">
+                <h1>Monit detail fact</h1>
+                <table>
+                    <thead>
+                        <tr>
+                            {% for key in monit_bdd_detail_fact[0].keys() %}
+                            <th>{{ key }}</th>
+                            {% endfor %}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for row in monit_bdd_detail_fact %}
+                        <tr>
+                            {% for key, value in row.items() %}
+                            <td>{{ value }}</td>
+                            {% endfor %}
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                <button onclick="previousPage('monit_bdd_detail_fact')">Page précédente</button>
+                <button onclick="nextPage('monit_bdd_detail_fact')">Page suivante</button>
+                <script>
+                    applyPagination('monit_bdd_detail_fact'); 
+                </script>
+            </div>
+        </div>
+        {% endif %}
+</body>
